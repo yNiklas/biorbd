@@ -1189,6 +1189,40 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
             "Biorbd was build without the module Muscles but the model defines "
             "a muscle");
 #endif  // MODULE_MUSCLES
+      } else if (!main_tag.tolower().compare("tendon")) {
+#ifdef MODULE_TENDONS
+        utils::String name;
+        file.read(name);
+        utils::String origin;
+        utils::String insertion;
+        utils::Vector3d origin_pos(0, 0, 0);
+        utils::Vector3d insert_pos(0, 0, 0);
+
+        while (file.read(property_tag) &&
+               property_tag.tolower().compare("endtendon")) {
+          if (!property_tag.tolower().compare("origin")) {
+            file.read(origin);
+          } else if (!property_tag.tolower().compare("insertion")) {
+            file.read(insertion);
+          } else if (!property_tag.tolower().compare("originposition")) {
+            readVector3d(file, variable, origin_pos);
+          } else if (!property_tag.tolower().compare("insertionposition")) {
+            readVector3d(file, variable, insert_pos);
+          }
+        }
+
+        utils::Error::check(
+            insertion != "" && origin != "",
+            "Insertion and origin of the tendon need to be defined.");
+        model->addTendon(
+            name,
+            internal_forces::tendons::TendonGeometry(
+                origin, origin_pos, insertion, insert_pos));
+#else   // MODULE_TENDONS
+        utils::Error::raise(
+            "Biorbd was build without the module Tendons but the model defines "
+            "a tendon");
+#endif  // MODULE_TENDONS
       } else if (!main_tag.tolower().compare("ligament")) {
 #ifdef MODULE_LIGAMENTS
         utils::String name;
