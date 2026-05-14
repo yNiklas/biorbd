@@ -16,6 +16,9 @@
 #ifdef MODULE_MUSCLES
 #include "InternalForces/Muscles/Muscles.h"
 #endif
+#ifdef MODULE_TENDONS
+#include "InternalForces/Tendons/Tendons.h"
+#endif
 #ifdef MODULE_PASSIVE_TORQUES
 #include "InternalForces/PassiveTorques/PassiveTorques.h"
 #endif
@@ -88,6 +91,10 @@ class BIORBD_API Model : public rigidbody::Joints,
 #ifdef MODULE_MUSCLES
     ,
                          public internal_forces::muscles::Muscles
+#endif
+#ifdef MODULE_TENDONS
+    ,
+                          public internal_forces::tendons::Tendons
 #endif
 #ifdef MODULE_PASSIVE_TORQUES
     ,

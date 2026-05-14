@@ -13,6 +13,8 @@ option(MODULE_KALMAN
     "If Kalman filter should be compiled" ON)
 option(MODULE_MUSCLES
     "Choose if the module muscles is to be added to biorbd" ON)
+option(MODULE_TENDONS
+    "Choose if the module tendons is to be added to biorbd" ON)
 option(MODULE_ACTUATORS
     "Choose if the module actuators is to be added to biorbd" ON)
 option(MODULE_PASSIVE_TORQUES
@@ -197,7 +199,7 @@ list(APPEND BIORBD_MODULE_NAMES "${UTILS_MODULE_NAME}")
 add_subdirectory("src/RigidBody")
 list(APPEND BIORBD_MODULE_NAMES "${RIGIDBODY_MODULE_NAME}")
 
-if (MODULE_ACTUATORS OR MODULE_MUSCLES OR MODULE_PASSIVE_TOQUES OR MODULE_LIGAMENTS)
+if (MODULE_ACTUATORS OR MODULE_MUSCLES OR MODULE_TENDONS OR MODULE_PASSIVE_TOQUES OR MODULE_LIGAMENTS)
     add_subdirectory("src/InternalForces")
     list(APPEND BIORBD_MODULE_NAMES "${INTERNAL_FORCES_MODULE_NAME}")
 endif()
@@ -205,6 +207,11 @@ endif()
 if (MODULE_MUSCLES)
     add_subdirectory("src/InternalForces/Muscles")
     list(APPEND BIORBD_MODULE_NAMES "${MUSCLES_MODULE_NAME}")
+endif()
+
+if (MODULE_TENDONS)
+    add_subdirectory("src/InternalForces/Tendons")
+    list(APPEND BIORBD_MODULE_NAMES "${TENDONS_MODULE_NAME}")
 endif()
 
 if (MODULE_PASSIVE_TORQUES)

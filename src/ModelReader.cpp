@@ -39,6 +39,12 @@
 #include "InternalForces/Muscles/StateDynamicsBuchanan.h"
 #endif  // MODULE_MUSCLES
 
+#ifdef MODULE_TENDONS
+#include "InternalForces/Tendons/Tendon.h"
+#include "InternalForces/Tendons/Tendons.h"
+#include "InternalForces/Tendons/TendonGeometry.h"
+#endif // MODULE_TENDONS
+
 #ifdef MODULE_PASSIVE_TORQUES
 #include "InternalForces/PassiveTorques/PassiveTorqueConstant.h"
 #include "InternalForces/PassiveTorques/PassiveTorqueExponential.h"
@@ -55,7 +61,7 @@
 #endif
 
 #if defined(MODULE_ACTUATORS) || defined(MODULE_MUSCLES) || \
-    defined(MODULE_LIGAMENTS)
+    defined(MODULE_TENDONS) || defined(MODULE_LIGAMENTS)
 #include "InternalForces/Geometry.h"
 #include "InternalForces/PathModifiers.h"
 #include "InternalForces/ViaPoint.h"

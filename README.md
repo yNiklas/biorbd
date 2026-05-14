@@ -151,6 +151,8 @@ BIORBD comes with a CMake (https://cmake.org/) project. If you don't know how to
 >
 > `MODULE_MUSCLES` If you want (`ON`) or not (`OFF`) to build with the muscle module. Default is `ON`. This allows to read and interact with models that include muscles.
 >
+> `MODULE_TENDONS` If you want (`ON`) or not (`OFF`) to build with the tendons module. Default is `ON`. This allows to read and interact with models that include tendons.
+> 
 > `MODULE_STATIC_OPTIM` If you want (`ON`) or not (`OFF`) to build the Static optimization module. Default is `ON` (if `ipopt` is found).
 >
 > `MODULE_VTP_FILES_READER` If you want (`ON`) or not (`OFF`) to build with the vtp files reader module. Default is `ON` (if `tinyxml2` is found). This allows to read mesh files produced by `OpenSim`.
