@@ -6,9 +6,19 @@
 #include <memory>
 #include <vector>
 
+#include "InternalForces/Actuators/ActuatorGauss3p.h"
+
 namespace BIORBD_NAMESPACE {
 namespace utils {
 class String;
+class Vector;
+class Matrix;
+}
+
+namespace rigidbody {
+class GeneralizedCoordinates;
+class GeneralizedVelocity;
+class GeneralizedTorque;
 }
 
 namespace internal_forces {
@@ -21,6 +31,8 @@ public:
   Tendons();
 
   Tendons(const Tendons& other);
+
+  virtual ~Tendons();
 
   Tendons DeepCopy() const;
 
@@ -37,6 +49,24 @@ public:
   std::vector<utils::String> tendonNames() const;
 
   size_t nbTendons() const;
+
+  ///
+  /// \brief Compute the joint torques from tendon actuations
+  /// \param tendonForces The pull forces vector of all the tendons
+  /// \param Q The generalized coordinates
+  /// \param Qdot The generalized velocities
+  /// \return The generalized joint torques, based on the actuated tendons
+  ///
+  rigidbody::GeneralizedTorque jointTorquesFromTendons(
+      const utils::Vector& tendonForces,
+      const rigidbody::GeneralizedCoordinates& Q,
+      const rigidbody::GeneralizedVelocity& Qdot);
+
+  ///
+  /// \brief Constructs the jacobian matrix (dL/dq) of all tendon lengths.
+  ///        The resulting matrix has the shape (nbTendons x nb_q).
+  /// \return The jacobian (dL/dq) of the tendon lengths
+  utils::Matrix tendonLengthsJacobian();
 
 protected:
   std::shared_ptr<std::vector<std::shared_ptr<Tendon>>> m_tendons;

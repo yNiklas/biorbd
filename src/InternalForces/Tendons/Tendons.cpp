@@ -4,6 +4,9 @@
 #include "InternalForces/Tendons/Tendon.h"
 #include "InternalForces/Tendons/TendonGeometry.h"
 #include "Utils/Error.h"
+#include "RigidBody/GeneralizedTorque.h"
+#include "RigidBody/Joints.h"
+#include "Utils/Matrix.h"
 
 using namespace BIORBD_NAMESPACE;
 
@@ -15,6 +18,8 @@ internal_forces::tendons::Tendons::Tendons()
 internal_forces::tendons::Tendons::Tendons(
     const internal_forces::tendons::Tendons& other)
     : m_tendons(other.m_tendons) {}
+
+internal_forces::tendons::Tendons::~Tendons() {}
 
 internal_forces::tendons::Tendons
 internal_forces::tendons::Tendons::DeepCopy() const {
@@ -65,3 +70,22 @@ size_t internal_forces::tendons::Tendons::nbTendons() const {
   return m_tendons->size();
 }
 
+rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFromTendons(
+    const utils::Vector& tendonForces,
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot) {
+  // Tendon-lengths-jacobian (dL/dq) * -tendon pull forces
+  const utils::Matrix& jaco(tendonLengthsJacobian());
+  return rigidbody::GeneralizedTorque(-jaco.transpose() * tendonForces);
+}
+
+utils::Matrix internal_forces::tendons::Tendons::tendonLengthsJacobian() {
+  const rigidbody::Joints& model = dynamic_cast<rigidbody::Joints&>(*this);
+
+  utils::Matrix tp(nbTendons(), model.nbDof());
+  for (size_t i = 0; i < nbTendons(); ++i) {
+    tp.block(i, 0, 1, static_cast<unsigned int>(model.nbDof())) =
+      ((*m_tendons)[i])->geometry().lengthsJacobian();
+  }
+  return tp;
+}
