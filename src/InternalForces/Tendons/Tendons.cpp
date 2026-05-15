@@ -82,14 +82,7 @@ rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFrom
     tendon ->updateKinematics(updatedModel, Q, Qdot);
   }
 
-  // Actuators cannot "push" tendons. Tendons are slack when not pulled.
-  // Hence the pull force shall never be negative
-  for (size_t i = 0; i < tendonForces.size(); ++i) {
-    if ((tendonForces(i) < 0).get()) {
-      utils::Error::raise(
-      "Tendon pull forces cannot be negative. Check the input forces.");
-    }
-  }
+  // TODO: tendon; Handle negative pull forces
 
   // Tendon-lengths-jacobian (dL/dq) * -tendon pull forces
   const utils::Matrix& jaco(tendonLengthsJacobian());

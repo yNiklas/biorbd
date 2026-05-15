@@ -14,7 +14,13 @@ internal_forces::tendons::TendonGeometry::TendonGeometry()
       m_origin(std::make_shared<utils::Vector3d>()),
       m_insertionSegmentName(std::make_shared<utils::String>()),
       m_insertion(std::make_shared<utils::Vector3d>()),
-      m_routingPoints(std::make_shared<std::vector<std::shared_ptr<internal_forces::tendons::TendonRoutingPoint>>>()) {}
+      m_routingPoints(std::make_shared<std::vector<std::shared_ptr<internal_forces::tendons::TendonRoutingPoint>>>()),
+      m_positionsJacobian(std::make_shared<utils::Matrix>()),
+      m_lengthsJacobian(std::make_shared<utils::Matrix>()),
+      m_pointsInGlobal(std::make_shared<std::vector<utils::Vector3d>>()),
+      m_pointsInLocal(std::make_shared<std::vector<utils::Vector3d>>()),
+      m_length(std::make_shared<utils::Scalar>(0)),
+      m_velocity(std::make_shared<utils::Scalar>(0)) {}
 
 internal_forces::tendons::TendonGeometry::TendonGeometry(
     const utils::String& originSegmentName,
@@ -26,7 +32,13 @@ internal_forces::tendons::TendonGeometry::TendonGeometry(
       m_insertionSegmentName(
           std::make_shared<utils::String>(insertionSegmentName)),
       m_insertion(std::make_shared<utils::Vector3d>(insertion)),
-      m_routingPoints(std::make_shared<std::vector<std::shared_ptr<internal_forces::tendons::TendonRoutingPoint>>>()) {}
+      m_routingPoints(std::make_shared<std::vector<std::shared_ptr<internal_forces::tendons::TendonRoutingPoint>>>()),
+      m_positionsJacobian(std::make_shared<utils::Matrix>()),
+      m_lengthsJacobian(std::make_shared<utils::Matrix>()),
+      m_pointsInGlobal(std::make_shared<std::vector<utils::Vector3d>>()),
+      m_pointsInLocal(std::make_shared<std::vector<utils::Vector3d>>()),
+      m_length(std::make_shared<utils::Scalar>(0)),
+      m_velocity(std::make_shared<utils::Scalar>(0)) {}
 
 internal_forces::tendons::TendonGeometry
 internal_forces::tendons::TendonGeometry::DeepCopy() const {
@@ -37,16 +49,29 @@ internal_forces::tendons::TendonGeometry::DeepCopy() const {
 
 void internal_forces::tendons::TendonGeometry::DeepCopy(
     const TendonGeometry& other) {
-  m_originSegmentName = std::make_shared<utils::String>(*other.m_originSegmentName);
-  m_origin = std::make_shared<utils::Vector3d>(*other.m_origin);
-  m_insertionSegmentName = std::make_shared<utils::String>(*other.m_insertionSegmentName);
-  m_insertion = std::make_shared<utils::Vector3d>(*other.m_insertion);
+  *m_originSegmentName = *other.m_originSegmentName;
+  *m_origin = other.m_origin->DeepCopy();
+  *m_insertionSegmentName = *other.m_insertionSegmentName;
+  *m_insertion = other.m_insertion->DeepCopy();
 
   m_routingPoints->resize(other.m_routingPoints->size());
   for (size_t i = 0; i < other.m_routingPoints->size(); ++i) {
     (*m_routingPoints)[i] = std::make_shared<internal_forces::tendons::TendonRoutingPoint>(
         (*other.m_routingPoints)[i]->DeepCopy());
   }
+
+  *m_positionsJacobian = *other.m_positionsJacobian;
+  *m_lengthsJacobian = *other.m_lengthsJacobian;
+  m_pointsInGlobal->resize(other.m_pointsInGlobal->size());
+  for (size_t i = 0; i < other.m_pointsInGlobal->size(); ++i) {
+    (*m_pointsInGlobal)[i] = (*other.m_pointsInGlobal)[i].DeepCopy();
+  }
+  m_pointsInLocal->resize(other.m_pointsInLocal->size());
+  for (size_t i = 0; i < other.m_pointsInLocal->size(); ++i) {
+    (*m_pointsInLocal)[i] = (*other.m_pointsInLocal)[i].DeepCopy();
+  }
+  *m_length = *other.m_length;
+  *m_velocity = *other.m_velocity;
 }
 
 void internal_forces::tendons::TendonGeometry::addRoutingPoint(
@@ -121,8 +146,16 @@ void internal_forces::tendons::TendonGeometry::updateKinematics(
     updatedModel.dof_count);
 
   for (size_t i = 0; i < m_pointsInLocal->size(); ++i) {
+    utils::String parentName;
+    if (i == 0) {
+      parentName = *m_originSegmentName;
+    } else if (i + 1 == m_pointsInLocal->size()) {
+      parentName = *m_insertionSegmentName;
+    } else {
+      parentName = (*m_pointsInLocal)[i].parent();
+    }
     m_positionsJacobian->block(3*static_cast<unsigned int>(i), 0, 3, updatedModel.dof_count)
-      = updatedModel.CalcPointJacobian(Q, (*m_pointsInLocal)[i].parent(), (*m_pointsInLocal)[i], false);
+      = updatedModel.CalcPointJacobian(Q, parentName, (*m_pointsInLocal)[i], false);
   }
 
   // Compute the tendon length
