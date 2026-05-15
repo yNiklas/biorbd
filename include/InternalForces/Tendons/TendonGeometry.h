@@ -6,7 +6,10 @@
 #include <memory>
 #include <vector>
 
+#include "InternalForces/Actuators/ActuatorGauss3p.h"
 #include "InternalForces/Tendons/TendonRoutingPoint.h"
+
+#include "RigidBody/Joints.h"
 
 namespace BIORBD_NAMESPACE {
 namespace utils {
@@ -48,7 +51,16 @@ public:
 
   TendonRoutingPoint& routingPoint(size_t idx) const;
 
+  ///
+  /// \brief Returns the tendon lengths jacobian (dL/dq) for this tendon
+  /// The resulting matrix has the shape (1xdof)
+  /// \return The tendon lengths jacobian (dL/dq) for this tendon only
   const utils::Matrix& lengthsJacobian() const;
+
+  void updateKinematics(
+    rigidbody::Joints& updatedModel,
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot);
 
 protected:
   void computeLengthsJacobian();
@@ -59,7 +71,13 @@ protected:
   std::shared_ptr<utils::Vector3d> m_insertion;
   std::shared_ptr<std::vector<std::shared_ptr<TendonRoutingPoint>>> m_routingPoints; ///< The routing points where the tendon must go through. They are kept and understood in the order of adding.
 
-  std::shared_ptr<utils::Matrix> m_lengthsJacobian;
+  std::shared_ptr<utils::Matrix> m_positionsJacobian; ///< The default jacobian matrix (dp/dq) of the positions (forward kinematics) for this tendon. Shape: ((2+n_rp)*3 x dof)
+  std::shared_ptr<utils::Matrix> m_lengthsJacobian; ///< The jacobian matrix (dL/dq) of the tendon lengths. Shape: (1 x dof)
+  std::shared_ptr<std::vector<utils::Vector3d>> m_pointsInGlobal; ///< Position of origin-, insertion, and routing-points in the global reference coordinate system
+  std::shared_ptr<std::vector<utils::Vector3d>> m_pointsInLocal; ///< Position of origin-, insertion, and routing-points in the local reference coordinate system of the segments they belong to
+
+  std::shared_ptr<utils::Scalar> m_length; ///< The length of the tendon
+  std::shared_ptr<utils::Scalar> m_velocity; ///< The velocity of the tendon elongation
 };
 }
 }

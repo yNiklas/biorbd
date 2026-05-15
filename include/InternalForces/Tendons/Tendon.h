@@ -42,6 +42,11 @@ public:
 
   const internal_forces::tendons::TendonGeometry& geometry() const;
 
+  void updateKinematics(
+    rigidbody::Joints& updatedModel,
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot);
+
 protected:
   std::shared_ptr<utils::String> m_name;
   std::shared_ptr<internal_forces::tendons::TendonGeometry> m_geometry;

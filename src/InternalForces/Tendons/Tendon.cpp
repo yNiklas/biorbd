@@ -48,3 +48,9 @@ internal_forces::tendons::Tendon::routingPoint(size_t idx) const {
 const internal_forces::tendons::TendonGeometry& internal_forces::tendons::Tendon::geometry() const {
   return *m_geometry;
 }
+void internal_forces::tendons::Tendon::updateKinematics(
+    rigidbody::Joints& updatedModel,
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot) {
+  m_geometry->updateKinematics(updatedModel, Q, Qdot);
+}

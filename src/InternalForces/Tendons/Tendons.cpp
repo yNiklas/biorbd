@@ -74,6 +74,23 @@ rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFrom
     const utils::Vector& tendonForces,
     const rigidbody::GeneralizedCoordinates& Q,
     const rigidbody::GeneralizedVelocity& Qdot) {
+  // Update the link positions first
+  rigidbody::Joints updatedModel = dynamic_cast<rigidbody::Joints&>(*this).UpdateKinematicsCustom(&Q);
+  // Update the corresponding positions of origins, routing points, and insertions of all tendons.
+  // Further the update computes the tendon length, velocity and the positions and lengths jacobian
+  for (auto tendon : *m_tendons) {
+    tendon ->updateKinematics(updatedModel, Q, Qdot);
+  }
+
+  // Actuators cannot "push" tendons. Tendons are slack when not pulled.
+  // Hence the pull force shall never be negative
+  for (size_t i = 0; i < tendonForces.size(); ++i) {
+    if ((tendonForces(i) < 0).get()) {
+      utils::Error::raise(
+      "Tendon pull forces cannot be negative. Check the input forces.");
+    }
+  }
+
   // Tendon-lengths-jacobian (dL/dq) * -tendon pull forces
   const utils::Matrix& jaco(tendonLengthsJacobian());
   return rigidbody::GeneralizedTorque(-jaco.transpose() * tendonForces);
@@ -82,6 +99,7 @@ rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFrom
 utils::Matrix internal_forces::tendons::Tendons::tendonLengthsJacobian() {
   const rigidbody::Joints& model = dynamic_cast<rigidbody::Joints&>(*this);
 
+  // Build the tendon lengths jacobian by stacking the lengths jacobians of all tendons
   utils::Matrix tp(nbTendons(), model.nbDof());
   for (size_t i = 0; i < nbTendons(); ++i) {
     tp.block(i, 0, 1, static_cast<unsigned int>(model.nbDof())) =
