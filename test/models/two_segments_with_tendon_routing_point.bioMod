@@ -1,0 +1,28 @@
+version    4
+
+segment segment1
+    rt 0.1 0.2 0.3 xyz 1 2 3
+    translations    xy
+    rotations	z
+    jointdampings 1 2 3
+endsegment
+
+segment segment2
+    parent segment1
+    rt 0.1 0.2 0.3 xyz 1 2 3
+    rotations	z
+endsegment
+
+tendon t
+    origin segment1
+    insertion segment2
+    originPosition 0 0 0
+    insertionPosition 0 0.5 0
+endtendon
+
+tendonRoutingPoint trp1
+    tendon t
+    parent segment1
+    position 0 0.5 0
+    frictionLoss 0.1
+endtendonRoutingPoint

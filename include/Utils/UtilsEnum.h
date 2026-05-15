@@ -17,6 +17,7 @@ enum NODE_TYPE {
   WRAPPING_HALF_CYLINDER,
   WRAPPING_SPHERE,
   VIA_POINT,
+  TENDON_ROUTING_POINT,
   SOFT_CONTACT,
   SOFT_CONTACT_SPHERE,
   NO_NODE_TYPE
@@ -45,6 +46,8 @@ inline const char* NODE_TYPE_toStr(NODE_TYPE type) {
       return "WrappinSphere";
     case VIA_POINT:
       return "ViaPoint";
+    case TENDON_ROUTING_POINT:
+      return "TendonRoutingPoint";
     case SOFT_CONTACT:
       return "SoftContact";
     case SOFT_CONTACT_SPHERE:

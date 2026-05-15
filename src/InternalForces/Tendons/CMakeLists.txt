@@ -6,6 +6,7 @@ set(SRC_LIST_MODULE
         "${CMAKE_CURRENT_SOURCE_DIR}/Tendons.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/Tendon.cpp"
         "${CMAKE_CURRENT_SOURCE_DIR}/TendonGeometry.cpp"
+        "${CMAKE_CURRENT_SOURCE_DIR}/TendonRoutingPoint.cpp"
 )
 
 # Create the library

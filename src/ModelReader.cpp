@@ -102,6 +102,13 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
   // Variable used to replace doubles
   std::map<utils::Equation, double> variable;
 
+#ifdef MODULE_TENDONS
+  std::map<
+      utils::String,
+      std::vector<internal_forces::tendons::TendonRoutingPoint>>
+      pendingRoutingPoints;
+#endif
+
   // Determine the file version
   file.readSpecificTag("version", main_tag);
   size_t version(static_cast<size_t>(atoi(main_tag.c_str())));
@@ -1223,6 +1230,51 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
             "Biorbd was build without the module Tendons but the model defines "
             "a tendon");
 #endif  // MODULE_TENDONS
+      } else if (!main_tag.tolower().compare("tendonroutingpoint")) {
+#ifdef MODULE_TENDONS
+        utils::String name;
+        file.read(name);
+        utils::String tendonName("");
+        utils::String parent("");
+        utils::Vector3d position(0, 0, 0);
+        utils::Scalar frictionLoss(1.0);
+
+        while (file.read(property_tag) &&
+               property_tag.tolower().compare("endtendonroutingpoint")) {
+          if (!property_tag.tolower().compare("tendon")) {
+            file.read(tendonName);
+          } else if (!property_tag.tolower().compare("parent")) {
+            file.read(parent);
+            size_t idx = static_cast<size_t>(model->GetBodyId(parent.c_str()));
+            utils::Error::check(
+                model->IsBodyId(static_cast<unsigned int>(idx)),
+                "Wrong origin parent name for a tendon routing point");
+          } else if (!property_tag.tolower().compare("position")) {
+            readVector3d(file, variable, position);
+          } else if (!property_tag.tolower().compare("frictionloss")) {
+            double floss;
+            file.read(floss);
+            frictionLoss = floss;
+          }
+        }
+
+        utils::Error::check(
+            tendonName != "", "Tendon routing point tendon must be defined");
+        utils::Error::check(
+            parent != "", "Tendon routing point parent must be defined");
+        pendingRoutingPoints[tendonName].push_back(
+            internal_forces::tendons::TendonRoutingPoint(
+                position(0),
+                position(1),
+                position(2),
+                name,
+                parent,
+                frictionLoss));
+#else   // MODULE_TENDONS
+        utils::Error::raise(
+            "Biorbd was build without the module Tendons but the model defines "
+            "a tendon routing point");
+#endif  // MODULE_TENDONS
       } else if (!main_tag.tolower().compare("ligament")) {
 #ifdef MODULE_LIGAMENTS
         utils::String name;
@@ -1604,6 +1656,24 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
     model->closeActuator();
   }
 #endif  // MODULE_ACTUATORS
+#ifdef MODULE_TENDONS
+  for (const auto& routingPoints : pendingRoutingPoints) {
+    size_t tendonIdx(static_cast<size_t>(-1));
+    for (size_t i = 0; i < model->nbTendons(); ++i) {
+      if (!model->tendonNames()[i].compare(routingPoints.first)) {
+        tendonIdx = i;
+        break;
+      }
+    }
+    utils::Error::check(
+        tendonIdx != static_cast<size_t>(-1),
+        "Tendon routing point references an unknown tendon: " +
+            routingPoints.first);
+    for (const auto& routingPoint : routingPoints.second) {
+      model->tendon(tendonIdx).addRoutingPoint(routingPoint);
+    }
+  }
+#endif  // MODULE_TENDONS
   // Close file
   // std::cout << "Model file successfully loaded" << std::endl;
   file.close();

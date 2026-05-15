@@ -56,7 +56,7 @@ std::vector<utils::String>
 internal_forces::tendons::Tendons::tendonNames() const {
   std::vector<utils::String> names;
   for (const auto& tendon : *m_tendons) {
-    names.push_back(*tendon->f_name);
+    names.push_back(*tendon->m_name);
   }
   return names;
 }

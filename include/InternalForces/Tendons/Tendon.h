@@ -4,8 +4,10 @@
 #include "biorbdConfig.h"
 
 #include <memory>
+#include <vector>
 
 #include "InternalForces/Tendons/TendonGeometry.h"
+#include "InternalForces/Tendons/TendonRoutingPoint.h"
 
 namespace BIORBD_NAMESPACE {
 namespace internal_forces {
@@ -33,9 +35,16 @@ public:
 
   void DeepCopy(const Tendon& other);
 
+  void addRoutingPoint(const internal_forces::tendons::TendonRoutingPoint& routingPoint);
+
+  size_t nbRoutingPoints() const;
+
+  TendonRoutingPoint& routingPoint(size_t idx) const;
+
 protected:
-  std::shared_ptr<utils::String> f_name;
-  std::shared_ptr<internal_forces::tendons::TendonGeometry> f_geometry;
+  std::shared_ptr<utils::String> m_name;
+  std::shared_ptr<internal_forces::tendons::TendonGeometry> m_geometry;
+  std::shared_ptr<std::vector<std::shared_ptr<TendonRoutingPoint>>> m_routingPoints; ///< The routing points where the tendon must go through. They are kept and understood in the order of adding.
 };
 }
 }

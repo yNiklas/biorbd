@@ -1,9 +1,11 @@
 // File : biorbd_tendons.i
 %{
 #include "InternalForces/Tendons/TendonGeometry.h"
+#include "InternalForces/Tendons/TendonRoutingPoint.h"
 #include "InternalForces/Tendons/Tendon.h"
 %}
 
+%include "@CMAKE_SOURCE_DIR@/include/InternalForces/Tendons/TendonRoutingPoint.h"
 %include "@CMAKE_SOURCE_DIR@/include/InternalForces/Tendons/TendonGeometry.h"
 %include "@CMAKE_SOURCE_DIR@/include/InternalForces/Tendons/Tendon.h"
 %include "@CMAKE_SOURCE_DIR@/include/InternalForces/Tendons/Tendons.h"

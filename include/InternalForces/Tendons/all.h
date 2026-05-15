@@ -6,5 +6,6 @@
 #include "InternalForces/Tendons/Tendon.h"
 #include "InternalForces/Tendons/Tendons.h"
 #include "InternalForces/Tendons/TendonGeometry.h"
+#include "InternalForces/Tendons/TendonRoutingPoint.h"
 
 #endif  // BIORBD_TENDONS_ALL_H
