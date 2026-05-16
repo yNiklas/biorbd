@@ -140,7 +140,7 @@ void internal_forces::tendons::TendonGeometry::updateKinematics(
     *m_insertion,
     false));
 
-  // Compute the positions jacobian
+  // Compute the positions jacobian for this tendon
   *m_positionsJacobian = utils::Matrix::Zero(
     static_cast<unsigned int>(m_pointsInLocal->size()*3),
     updatedModel.dof_count);
@@ -170,4 +170,10 @@ void internal_forces::tendons::TendonGeometry::updateKinematics(
   // Compute the tendon velocity. Since the lengths jacobian is needed therefore,
   // it is computed afterward
   *m_velocity = (lengthsJacobian() * Qdot)[0];
+}
+utils::Scalar& internal_forces::tendons::TendonGeometry::length() const {
+  return *m_length;
+}
+utils::Scalar& internal_forces::tendons::TendonGeometry::velocity() const {
+  return *m_velocity;
 }

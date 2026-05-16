@@ -62,6 +62,10 @@ public:
     const rigidbody::GeneralizedCoordinates& Q,
     const rigidbody::GeneralizedVelocity& Qdot);
 
+  utils::Scalar& length() const;
+
+  utils::Scalar& velocity() const;
+
 protected:
   void computeLengthsJacobian();
 

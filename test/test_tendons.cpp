@@ -34,12 +34,57 @@ TEST(Tendons, jointTorquesFromTendons) {
   Model model("models/two_segments_with_tendon.bioMod");
   rigidbody::GeneralizedCoordinates Q(model);
   rigidbody::GeneralizedVelocity Qdot(model);
-  Q.setZero();
-  Qdot.setZero();
 
   utils::Vector tendonForces(model.nbTendons());
   tendonForces.setZero();
 
-  const auto torques = model.jointTorquesFromTendons(tendonForces, Q, Qdot);
-  EXPECT_EQ(static_cast<size_t>(torques.size()), model.nbDof());
+  {
+    const auto tau = model.jointTorquesFromTendons(tendonForces, Q, Qdot);
+    EXPECT_EQ(static_cast<size_t>(tau.size()), model.nbDof());
+    for (unsigned int i = 0; i < tau.size(); ++i) {
+      // Flat configuration => no lever arm => no joint torque
+      SCALAR_TO_DOUBLE(flatTauNonForce, tau(i));
+      EXPECT_NEAR(flatTauNonForce, 0.0, 1e-5);
+    }
+
+    // In the flat configuration, the tendons length is exactly one.
+    // Since there is no lever arm in the flat configuration, the velocity is 0
+    SCALAR_TO_DOUBLE(tendonLength, model.tendons()[0]->geometry().length());
+    EXPECT_NEAR(tendonLength, 1.0, 1e-5);
+    SCALAR_TO_DOUBLE(tendonVelocity, model.tendons()[0]->geometry().velocity());
+    EXPECT_NEAR(tendonVelocity, 0.0, 1e-5);
+  }
+
+  {
+    tendonForces = casadi::DM::vertcat({400});
+    const auto tau = model.jointTorquesFromTendons(tendonForces, Q, Qdot);
+    EXPECT_EQ(static_cast<size_t>(tau.size()), model.nbDof());
+    for (unsigned int i = 0; i < tau.size(); ++i) {
+      // Even with pull forces, there can be no motion (no lever arm!)
+      SCALAR_TO_DOUBLE(flatTauForce, tau(i));
+      EXPECT_NEAR(flatTauForce, 0.0, 1e-5);
+    }
+  }
+
+  {
+    Q = casadi::DM::vertcat({M_PI / 2});
+    Qdot = casadi::DM::vertcat({0.0});
+    tendonForces = casadi::DM::vertcat({10});
+    // When the tendon angle is 45°, the x component of the force is 10*cos(0.5)=7.07
+    const double tendonForceX = 10*cos(M_PI/4);
+    // The lever arm is 0.5
+    const double expectedJointTorque = tendonForceX*0.5;
+
+    const auto tau = model.jointTorquesFromTendons(tendonForces, Q, Qdot);
+    EXPECT_EQ(static_cast<size_t>(tau.size()), model.nbDof());
+    for (unsigned int i = 0; i < tau.size(); ++i) {
+      SCALAR_TO_DOUBLE(tauForce, tau(i));
+      EXPECT_NEAR(tauForce, expectedJointTorque, 1e-5);
+    }
+
+    SCALAR_TO_DOUBLE(tendonLength, model.tendons()[0]->geometry().length());
+    EXPECT_NEAR(tendonLength, sqrt(0.5), 1e-5);
+    SCALAR_TO_DOUBLE(tendonVelocity, model.tendons()[0]->geometry().velocity());
+    EXPECT_NEAR(tendonVelocity, 0.0, 1e-5);
+  }
 }
