@@ -171,9 +171,15 @@ void internal_forces::tendons::TendonGeometry::updateKinematics(
   // it is computed afterward
   *m_velocity = (lengthsJacobian() * Qdot)[0];
 }
+
 utils::Scalar& internal_forces::tendons::TendonGeometry::length() const {
   return *m_length;
 }
+
 utils::Scalar& internal_forces::tendons::TendonGeometry::velocity() const {
   return *m_velocity;
+}
+
+const std::vector<utils::Vector3d>& internal_forces::tendons::TendonGeometry::pointsInGlobal() const {
+  return *m_pointsInGlobal;
 }

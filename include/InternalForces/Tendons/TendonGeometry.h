@@ -66,6 +66,8 @@ public:
 
   utils::Scalar& velocity() const;
 
+  const std::vector<utils::Vector3d>& pointsInGlobal() const;
+
 protected:
   void computeLengthsJacobian();
 
