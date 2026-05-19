@@ -28,24 +28,29 @@ class BIORBD_API TendonGeometry {
 public:
   TendonGeometry();
 
- ///
- /// @brief Construct tendon geometry
- /// @param originSegmentName The name of the segment where the tendon origin
- /// lies
- /// @param origin The position of the tendon origin on the origin segment
- /// @param insertionSegmentName The name of the segment where the tendon
- /// insertion lies
- /// @param insertion The position of the tendon insertion on the insertion segment
+  ///
+  /// @brief Construct tendon geometry
+  /// @param originSegmentName The name of the segment where the tendon origin
+  /// lies
+  /// @param origin The position of the tendon origin on the origin segment
+  /// @param insertionSegmentName The name of the segment where the tendon
+  /// insertion lies
+  /// @param insertion The position of the tendon insertion on the insertion segment
+  /// \param firstSectionFrictionLoss The friction loss of the first section between
+  ///        the origin and the first routing point
   ///
   TendonGeometry(
     const utils::String& originSegmentName, const utils::Vector3d& origin,
-    const utils::String& insertionSegmentName, const utils::Vector3d& insertion);
+    const utils::String& insertionSegmentName, const utils::Vector3d& insertion,
+    const utils::Scalar& firstSectionFrictionLoss);
 
   TendonGeometry DeepCopy() const;
 
   void DeepCopy(const TendonGeometry& other);
 
-  void addRoutingPoint(const internal_forces::tendons::TendonRoutingPoint& routingPoint);
+  void addRoutingPoint(
+    const internal_forces::tendons::TendonRoutingPoint& routingPoint,
+    const utils::Scalar& sectionFrictionLoss);
 
   size_t nbRoutingPoints() const;
 
@@ -57,33 +62,51 @@ public:
   /// \return The tendon lengths jacobian (dL/dq) for this tendon only
   const utils::Matrix& lengthsJacobian() const;
 
+  ///
+  /// \brief Returns the tendon section lengths jacobian (dLs/dq) for this tendon
+  /// The resulting matrix has the shape ((1+n_rp)xdof), where n_rp is the number of routing points of the tendon.
+  /// \return The tendon section lengths jacobian (dLs/dq) for this tendon only
+  ///
+  const utils::Matrix& sectionLengthsJacobian() const;
+
   void updateKinematics(
     rigidbody::Joints& updatedModel,
     const rigidbody::GeneralizedCoordinates& Q,
-    const rigidbody::GeneralizedVelocity& Qdot);
+    const rigidbody::GeneralizedVelocity& Qdot) const;
 
   utils::Scalar& length() const;
 
+  utils::Vector& sectionLengths() const;
+
   utils::Scalar& velocity() const;
+
+  utils::Vector& sectionVelocities() const;
 
   const std::vector<utils::Vector3d>& pointsInGlobal() const;
 
+  const std::vector<utils::Scalar>& sectionFrictionLosses() const;
+
 protected:
-  void computeLengthsJacobian();
+  void computeLengthsJacobian() const;
+  void computeSectionLengthsJacobian() const;
 
   std::shared_ptr<utils::String> m_originSegmentName;
   std::shared_ptr<utils::Vector3d> m_origin;
   std::shared_ptr<utils::String> m_insertionSegmentName;
   std::shared_ptr<utils::Vector3d> m_insertion;
   std::shared_ptr<std::vector<std::shared_ptr<TendonRoutingPoint>>> m_routingPoints; ///< The routing points where the tendon must go through. They are kept and understood in the order of adding.
+  std::shared_ptr<std::vector<utils::Scalar>> m_sectionFrictionLosses; ///< The friction losses for each section. Shape: (1+n_rp)
 
   std::shared_ptr<utils::Matrix> m_positionsJacobian; ///< The default jacobian matrix (dp/dq) of the positions (forward kinematics) for this tendon. Shape: ((2+n_rp)*3 x dof)
   std::shared_ptr<utils::Matrix> m_lengthsJacobian; ///< The jacobian matrix (dL/dq) of the tendon lengths. Shape: (1 x dof)
+  std::shared_ptr<utils::Matrix> m_sectionLengthsJacobian; ///< The jacobian matrix (dLs/dq) of the tendon section lengths. Shape: ((1+n_rp) x dof)
   std::shared_ptr<std::vector<utils::Vector3d>> m_pointsInGlobal; ///< Position of origin-, insertion, and routing-points in the global reference coordinate system
   std::shared_ptr<std::vector<utils::Vector3d>> m_pointsInLocal; ///< Position of origin-, insertion, and routing-points in the local reference coordinate system of the segments they belong to
 
   std::shared_ptr<utils::Scalar> m_length; ///< The length of the tendon
+  std::shared_ptr<utils::Vector> m_sectionLengths; ///< The lengths of the tendon sections (origin to first routing point, between routing points, last routing point to insertion). Shape: (1+n_rp)
   std::shared_ptr<utils::Scalar> m_velocity; ///< The velocity of the tendon elongation
+  std::shared_ptr<utils::Vector> m_sectionVelocities; ///< The velocities of the tendon sections. Shape: (1+n_rp)
 };
 }
 }

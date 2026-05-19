@@ -25,7 +25,6 @@ public:
   /// @param name The name of the routing point
   /// @param parentSegmentName The name of the segment where the point is located
   /// @param frictionLoss The friction loss coefficient (between 0 and 1) at the routing point (default is 1.0, meaning no loss)
-  ///                     The friction loss decreases the transmitted tendon pull force: F_after_routing_point = (1-frictionLoss) * F_before_routing_point
   ///
   TendonRoutingPoint(
       const utils::Scalar& x,

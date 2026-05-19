@@ -25,4 +25,5 @@ tendonRoutingPoint trp1
     parent segment1
     position 0 0.5 0
     frictionLoss 0.1
+    sectionFrictionLoss 0.2
 endtendonRoutingPoint

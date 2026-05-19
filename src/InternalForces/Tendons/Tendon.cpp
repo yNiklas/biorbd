@@ -32,12 +32,17 @@ void internal_forces::tendons::Tendon::DeepCopy(
 }
 
 void internal_forces::tendons::Tendon::addRoutingPoint(
-  const TendonRoutingPoint& routingPoint) {
-  m_geometry->addRoutingPoint(routingPoint);
+  const TendonRoutingPoint& routingPoint,
+  const utils::Scalar& sectionFrictionLoss) {
+  m_geometry->addRoutingPoint(routingPoint, sectionFrictionLoss);
 }
 
 size_t internal_forces::tendons::Tendon::nbRoutingPoints() const {
   return m_geometry->nbRoutingPoints();
+}
+
+size_t internal_forces::tendons::Tendon::nbSections() const {
+  return m_geometry->nbRoutingPoints() + 1;
 }
 
 internal_forces::tendons::TendonRoutingPoint&
@@ -48,6 +53,7 @@ internal_forces::tendons::Tendon::routingPoint(size_t idx) const {
 const internal_forces::tendons::TendonGeometry& internal_forces::tendons::Tendon::geometry() const {
   return *m_geometry;
 }
+
 void internal_forces::tendons::Tendon::updateKinematics(
     rigidbody::Joints& updatedModel,
     const rigidbody::GeneralizedCoordinates& Q,

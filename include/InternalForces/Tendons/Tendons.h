@@ -50,25 +50,39 @@ public:
 
   size_t nbTendons() const;
 
+  size_t nbTotalTendonSections() const;
+
   ///
   /// \brief Compute the joint torques from tendon actuations
-  /// \param tendonForces The pull forces vector of all the tendons
+  /// \param tendonForces The pull forces vector of all the tendons. Shape: (nbTendons)
   /// \param Q The generalized coordinates
   /// \param Qdot The generalized velocities
+  /// \param from_sections Whether the tendon forces should be expanded to sections: (nbTendons) -> (nbTendons * n_sections_per_tendon) = (nbTendons) ->  (nbTotalTendonSections)
   /// \return The generalized joint torques, based on the actuated tendons
   ///
   rigidbody::GeneralizedTorque jointTorquesFromTendons(
       const utils::Vector& tendonForces,
       const rigidbody::GeneralizedCoordinates& Q,
-      const rigidbody::GeneralizedVelocity& Qdot);
+      const rigidbody::GeneralizedVelocity& Qdot,
+      bool from_sections = true);
 
   ///
   /// \brief Constructs the jacobian matrix (dL/dq) of all tendon lengths.
   ///        The resulting matrix has the shape (nbTendons x nb_q).
   /// \return The jacobian (dL/dq) of the tendon lengths
+  ///
   utils::Matrix tendonLengthsJacobian();
 
+  ///
+  /// \brief Constructs the jacobian matrix (dLs/dq) of all tendons sections of all tendons.
+  ///        The resulting matrix has the shape (nbTendons * n_sections_per_tendon x nb_q) = (nbTotalTendonSections).
+  /// \return The jacobian (dLs/dq) of the tendon sections lengths
+  ///
+  utils::Matrix tendonSectionLengthsJacobian();
+
 protected:
+  utils::Vector expandTendonPullForcesToSections(const utils::Vector& tendonForces) const;
+
   std::shared_ptr<std::vector<std::shared_ptr<Tendon>>> m_tendons;
 };
 }

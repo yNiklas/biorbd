@@ -28,6 +28,12 @@ TEST(Tendons, parseRoutingPointFromModelFile) {
   EXPECT_DOUBLE_EQ(y, 0.5);
   SCALAR_TO_DOUBLE(floss, model.tendon(0).routingPoint(0).frictionLoss())
   EXPECT_DOUBLE_EQ(floss, 0.1);
+  SCALAR_TO_DOUBLE(sFloss1, model.tendon(0).geometry().sectionFrictionLosses()[0]);
+  EXPECT_DOUBLE_EQ(sFloss1, 0.05);
+  SCALAR_TO_DOUBLE(sFloss2, model.tendon(0).geometry().sectionFrictionLosses()[1]);
+  EXPECT_DOUBLE_EQ(sFloss2, 0.15);
+  SCALAR_TO_DOUBLE(sFloss3, model.tendon(0).geometry().sectionFrictionLosses()[2]);
+  EXPECT_DOUBLE_EQ(sFloss3, 0.1);
 }
 
 TEST(Tendons, jointTorquesFromTendons) {

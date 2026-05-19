@@ -65,16 +65,19 @@ tendon t
     insertion distal
     originPosition 0 0 0
     insertionPosition 0 0.2 0
+    firstSectionFrictionLoss 0.05
 endtendon
 tendonRoutingPoint trp1
     tendon t
     parent proximal
     position 0 0.5 0
     frictionLoss 0.1
+    sectionFrictionLoss 0.15
 endtendonRoutingPoint
 tendonRoutingPoint trp2
     tendon t
     parent middle
     position 0 0.5 0
     frictionLoss 0.0
+    sectionFrictionLoss 0.1
 endtendonRoutingPoint

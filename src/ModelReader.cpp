@@ -107,6 +107,8 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
       utils::String,
       std::vector<internal_forces::tendons::TendonRoutingPoint>>
       pendingRoutingPoints;
+  std::map<utils::String, std::vector<utils::Scalar>> pendingSectionFrictionLosses;
+
 #endif
 
   // Determine the file version
@@ -1204,6 +1206,7 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
         utils::String insertion;
         utils::Vector3d origin_pos(0, 0, 0);
         utils::Vector3d insert_pos(0, 0, 0);
+        utils::Scalar firstSectionFrictionLoss(0.0);
 
         while (file.read(property_tag) &&
                property_tag.tolower().compare("endtendon")) {
@@ -1215,6 +1218,10 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
             readVector3d(file, variable, origin_pos);
           } else if (!property_tag.tolower().compare("insertionposition")) {
             readVector3d(file, variable, insert_pos);
+          } else if (!property_tag.tolower().compare("firstsectionfrictionloss")) {
+            double fsFloss;
+            file.read(fsFloss);
+            firstSectionFrictionLoss = fsFloss;
           }
         }
 
@@ -1224,7 +1231,9 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
         model->addTendon(
             name,
             internal_forces::tendons::TendonGeometry(
-                origin, origin_pos, insertion, insert_pos));
+                origin, origin_pos,
+                insertion, insert_pos,
+                firstSectionFrictionLoss));
 #else   // MODULE_TENDONS
         utils::Error::raise(
             "Biorbd was build without the module Tendons but the model defines "
@@ -1237,7 +1246,8 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
         utils::String tendonName("");
         utils::String parent("");
         utils::Vector3d position(0, 0, 0);
-        utils::Scalar frictionLoss(1.0);
+        utils::Scalar frictionLoss(0.0);
+        utils::Scalar sectionFrictionLoss(0.0);
 
         while (file.read(property_tag) &&
                property_tag.tolower().compare("endtendonroutingpoint")) {
@@ -1255,6 +1265,10 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
             double floss;
             file.read(floss);
             frictionLoss = floss;
+          } else if (!property_tag.tolower().compare("sectionfrictionloss")) {
+            double sFloss;
+            file.read(sFloss);
+            sectionFrictionLoss = sFloss;
           }
         }
 
@@ -1270,6 +1284,7 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
                 name,
                 parent,
                 frictionLoss));
+        pendingSectionFrictionLosses[tendonName].push_back(sectionFrictionLoss);
 #else   // MODULE_TENDONS
         utils::Error::raise(
             "Biorbd was build without the module Tendons but the model defines "
@@ -1669,8 +1684,10 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
         tendonIdx != static_cast<size_t>(-1),
         "Tendon routing point references an unknown tendon: " +
             routingPoints.first);
-    for (const auto& routingPoint : routingPoints.second) {
-      model->tendon(tendonIdx).addRoutingPoint(routingPoint);
+    for (size_t i = 0; i < routingPoints.second.size(); ++i) {
+      const auto& routingPoint = routingPoints.second[i];
+      const auto& sectionFrictionLoss = pendingSectionFrictionLosses[routingPoints.first][i];
+      model->tendon(tendonIdx).addRoutingPoint(routingPoint, sectionFrictionLoss);
     }
   }
 #endif  // MODULE_TENDONS

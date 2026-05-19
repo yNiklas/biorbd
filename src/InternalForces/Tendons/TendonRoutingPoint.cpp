@@ -7,7 +7,7 @@ using namespace BIORBD_NAMESPACE;
 
 internal_forces::tendons::TendonRoutingPoint::TendonRoutingPoint()
     : utils::Vector3d(),
-      m_frictionLoss(std::make_shared<utils::Scalar>(1.0)) {
+      m_frictionLoss(std::make_shared<utils::Scalar>(0.0)) {
   *m_typeOfNode = utils::NODE_TYPE::TENDON_ROUTING_POINT;
 }
 
@@ -26,7 +26,7 @@ internal_forces::tendons::TendonRoutingPoint::TendonRoutingPoint(
 internal_forces::tendons::TendonRoutingPoint::TendonRoutingPoint(
     const utils::Vector3d& other)
     : utils::Vector3d(other),
-      m_frictionLoss(std::make_shared<utils::Scalar>(1.0)) {
+      m_frictionLoss(std::make_shared<utils::Scalar>(0.0)) {
   *m_typeOfNode = utils::NODE_TYPE::TENDON_ROUTING_POINT;
 }
 

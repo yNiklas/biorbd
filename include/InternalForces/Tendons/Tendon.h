@@ -34,9 +34,13 @@ public:
 
   void DeepCopy(const Tendon& other);
 
-  void addRoutingPoint(const internal_forces::tendons::TendonRoutingPoint& routingPoint);
+  void addRoutingPoint(
+    const internal_forces::tendons::TendonRoutingPoint& routingPoint,
+    const utils::Scalar& sectionFrictionLoss);
 
   size_t nbRoutingPoints() const;
+
+  size_t nbSections() const;
 
   TendonRoutingPoint& routingPoint(size_t idx) const;
 

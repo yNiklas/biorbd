@@ -25,4 +25,5 @@ tendon t
     insertion Link
     originPosition 0 0 0
     insertionPosition 0 0.5 0
+    firstSectionFrictionLoss 0.0
 endtendon
