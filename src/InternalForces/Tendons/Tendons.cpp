@@ -82,7 +82,11 @@ rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFrom
     const utils::Vector& tendonForces,
     const rigidbody::GeneralizedCoordinates& Q,
     const rigidbody::GeneralizedVelocity& Qdot,
-    bool from_sections) {
+    bool with_friction) {
+  utils::Error::check(
+      static_cast<size_t>(tendonForces.size()) == nbTendons(),
+      "tendonForces size must match the number of tendons");
+
   // Update the link positions first
   rigidbody::Joints updatedModel = dynamic_cast<rigidbody::Joints&>(*this).UpdateKinematicsCustom(&Q);
   // Update the corresponding positions of origins, routing points, and insertions of all tendons.
@@ -93,7 +97,7 @@ rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFrom
 
   // TODO: tendon; Handle negative pull forces
 
-  if (from_sections) {
+  if (with_friction) {
     const utils::Matrix& sectionsJaco(tendonSectionLengthsJacobian());
     const utils::Vector& expandedForces(expandTendonPullForcesToSections(tendonForces));
     return rigidbody::GeneralizedTorque(-sectionsJaco.transpose() * expandedForces);
@@ -133,17 +137,26 @@ utils::Matrix internal_forces::tendons::Tendons::tendonSectionLengthsJacobian() 
 utils::Vector internal_forces::tendons::Tendons::expandTendonPullForcesToSections(
     const utils::Vector& tendonForces) const {
   utils::Vector expandedForces(nbTotalTendonSections());
+  expandedForces.setZero();
+
+  size_t sectionIdx = 0;
   for (size_t i = 0; i < m_tendons->size(); ++i) {
-    const auto& frictionLosses = (*m_tendons)[i]->geometry().sectionFrictionLosses();
+    const auto& tendon = *(*m_tendons)[i];
+    const auto& frictionLosses = tendon.geometry().sectionFrictionLosses();
     const auto& tendonForce = tendonForces(i);
-    for (size_t j = 0; j < (*m_tendons)[i]->nbSections(); ++j) {
+    utils::Error::check(
+        frictionLosses.size() == tendon.nbSections(),
+        "Each tendon must have one friction loss per section");
+
+    for (size_t j = 0; j < tendon.nbSections(); ++j) {
       if (j == 0) {
-        expandedForces(i) = tendonForce - frictionLosses[0];
+        expandedForces(sectionIdx) = tendonForce * (1-frictionLosses[0]);
       } else {
         // TODO: tendon; Add friction loss of routing points ("wrapping")
-        expandedForces(i + j) = expandedForces(i + j - 1) - frictionLosses[j];
+        expandedForces(sectionIdx + j) = expandedForces(sectionIdx + j - 1) * (1 - frictionLosses[j]);
       }
     }
+    sectionIdx += tendon.nbSections();
   }
   return expandedForces;
 }

@@ -1,6 +1,7 @@
 #include "biorbdConfig.h"
 
 #include <gtest/gtest.h>
+#include <string>
 
 #include "BiorbdModel.h"
 #include "RigidBody/GeneralizedCoordinates.h"
@@ -12,15 +13,36 @@
 
 using namespace BIORBD_NAMESPACE;
 
+namespace {
+std::string modelTestPath(const std::string& file) {
+  return std::string(BIORBD_SOURCE_DIR) + "/test/models/" + file;
+}
+}
+
 TEST(Tendons, parseFromModelFile) {
-  Model model("models/two_segments_with_tendon.bioMod");
+  Model model(modelTestPath("two_segments_with_tendon.bioMod"));
   EXPECT_EQ(model.nbTendons(), 1);
   EXPECT_EQ(model.tendonNames().size(), 1);
   EXPECT_STREQ(model.tendonNames()[0].c_str(), "t");
 }
 
+TEST(Tendons, parseRoutingPointsFromModelFile) {
+  Model model(modelTestPath("two_segments_with_tendon_routing_point.bioMod"));
+  EXPECT_EQ(model.nbTendons(), 2);
+  EXPECT_EQ(model.tendonNames().size(), 2);
+  EXPECT_STREQ(model.tendonNames()[0].c_str(), "t");
+  EXPECT_STREQ(model.tendonNames()[1].c_str(), "t2");
+
+  EXPECT_EQ(model.tendon(0).nbRoutingPoints(), 1);
+
+  EXPECT_STREQ(model.tendon(0).routingPoint(0).parent().c_str(), "segment1");
+
+  SCALAR_TO_DOUBLE(fsfloss, model.tendon(1).geometry().sectionFrictionLosses()[0]);
+  EXPECT_DOUBLE_EQ(fsfloss, 0.05);
+}
+
 TEST(Tendons, parseRoutingPointFromModelFile) {
-  Model model("models/tendon_finger.bioMod");
+  Model model(modelTestPath("tendon_finger.bioMod"));
   EXPECT_EQ(model.nbTendons(), 1);
   EXPECT_EQ(model.tendon(0).nbRoutingPoints(), 2);
   EXPECT_STREQ(model.tendon(0).routingPoint(0).parent().c_str(), "proximal");
@@ -37,7 +59,11 @@ TEST(Tendons, parseRoutingPointFromModelFile) {
 }
 
 TEST(Tendons, jointTorquesFromTendons) {
-  Model model("models/two_segments_with_tendon.bioMod");
+  Model model(modelTestPath("two_segments_with_tendon.bioMod"));
+  EXPECT_EQ(model.tendon(0).nbSections(), 1);
+  SCALAR_TO_DOUBLE(sectionFrictionLoss, model.tendon(0).geometry().sectionFrictionLosses()[0]);
+  EXPECT_DOUBLE_EQ(sectionFrictionLoss, 0.05);
+
   rigidbody::GeneralizedCoordinates Q(model);
   rigidbody::GeneralizedVelocity Qdot(model);
 
@@ -81,7 +107,8 @@ TEST(Tendons, jointTorquesFromTendons) {
     // The lever arm is 0.5
     const double expectedJointTorque = tendonForceX*0.5;
 
-    const auto tau = model.jointTorquesFromTendons(tendonForces, Q, Qdot);
+    // First, test without friction
+    auto tau = model.jointTorquesFromTendons(tendonForces, Q, Qdot, false);
     EXPECT_EQ(static_cast<size_t>(tau.size()), model.nbDof());
     for (unsigned int i = 0; i < tau.size(); ++i) {
       SCALAR_TO_DOUBLE(tauForce, tau(i));
@@ -92,11 +119,19 @@ TEST(Tendons, jointTorquesFromTendons) {
     EXPECT_NEAR(tendonLength, sqrt(0.5), 1e-5);
     SCALAR_TO_DOUBLE(tendonVelocity, model.tendons()[0]->geometry().velocity());
     EXPECT_NEAR(tendonVelocity, 0.0, 1e-5);
+
+    // Second, test with friction
+    tau = model.jointTorquesFromTendons(tendonForces, Q, Qdot, true);
+    EXPECT_EQ(static_cast<size_t>(tau.size()), model.nbDof());
+    for (unsigned int i = 0; i < tau.size(); ++i) {
+      SCALAR_TO_DOUBLE(tauForce, tau(i));
+      EXPECT_NEAR(tauForce, expectedJointTorque*0.95, 1e-5);
+    }
   }
 }
 
 TEST(Tendons, jointTorquesFromRoutingPointTendons) {
-  Model model("models/tendon_finger.bioMod");
+  Model model(modelTestPath("tendon_finger.bioMod"));
   rigidbody::GeneralizedCoordinates Q(model);
   rigidbody::GeneralizedVelocity Qdot(model);
 

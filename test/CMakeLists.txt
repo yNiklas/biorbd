@@ -80,6 +80,11 @@ target_include_directories(${PROJECT_NAME} PRIVATE
     "${IPOPT_INCLUDE_DIR}"
 )
 
+file(TO_CMAKE_PATH "${CMAKE_SOURCE_DIR}" BIORBD_SOURCE_DIR)
+target_compile_definitions(${PROJECT_NAME} PRIVATE
+    BIORBD_SOURCE_DIR="${BIORBD_SOURCE_DIR}"
+)
+
 # Standard linking to gtest stuff.
 target_link_libraries(${PROJECT_NAME}
     "gtest_main"

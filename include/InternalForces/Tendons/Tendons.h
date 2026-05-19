@@ -57,14 +57,15 @@ public:
   /// \param tendonForces The pull forces vector of all the tendons. Shape: (nbTendons)
   /// \param Q The generalized coordinates
   /// \param Qdot The generalized velocities
-  /// \param from_sections Whether the tendon forces should be expanded to sections: (nbTendons) -> (nbTendons * n_sections_per_tendon) = (nbTendons) ->  (nbTotalTendonSections)
+  /// \param with_friction Whether the tendon forces should be expanded to
+  ///        sections and apply the specified friction losses: (nbTendons) -> (nbTendons * n_sections_per_tendon) = (nbTendons) ->  (nbTotalTendonSections)
   /// \return The generalized joint torques, based on the actuated tendons
   ///
   rigidbody::GeneralizedTorque jointTorquesFromTendons(
       const utils::Vector& tendonForces,
       const rigidbody::GeneralizedCoordinates& Q,
       const rigidbody::GeneralizedVelocity& Qdot,
-      bool from_sections = true);
+      bool with_friction = true);
 
   ///
   /// \brief Constructs the jacobian matrix (dL/dq) of all tendon lengths.

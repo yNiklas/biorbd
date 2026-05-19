@@ -21,9 +21,10 @@ segment Link
 endsegment
 
 tendon t
-    origin ground
-    insertion Link
-    originPosition 0 0 0
-    insertionPosition 0 0.5 0
-    firstSectionFrictionLoss 0.0
+    origin                      ground
+    insertion                   Link
+    originPosition              0 0 0
+    insertionPosition           0 0.5 0
+    firstSectionFrictionLoss    0.05    // The friction loss coefficient for the first (and here only) section of the
+                                        // tendon. The applied pull force is reduced by this factor: F_applied = F_pull * (1 - firstSectionFrictionLoss)
 endtendon

@@ -44,7 +44,9 @@ internal_forces::tendons::TendonGeometry::TendonGeometry(
       m_pointsInGlobal(std::make_shared<std::vector<utils::Vector3d>>()),
       m_pointsInLocal(std::make_shared<std::vector<utils::Vector3d>>()),
       m_length(std::make_shared<utils::Scalar>(0)),
-      m_velocity(std::make_shared<utils::Scalar>(0)) {}
+      m_sectionLengths(std::make_shared<utils::Vector>()),
+      m_velocity(std::make_shared<utils::Scalar>(0)),
+      m_sectionVelocities(std::make_shared<utils::Vector>()) {}
 
 internal_forces::tendons::TendonGeometry
 internal_forces::tendons::TendonGeometry::DeepCopy() const {
@@ -84,6 +86,8 @@ void internal_forces::tendons::TendonGeometry::DeepCopy(
   }
   *m_length = *other.m_length;
   *m_velocity = *other.m_velocity;
+  *m_sectionLengths = *other.m_sectionLengths;
+  *m_sectionVelocities = *other.m_sectionVelocities;
 }
 
 void internal_forces::tendons::TendonGeometry::addRoutingPoint(
