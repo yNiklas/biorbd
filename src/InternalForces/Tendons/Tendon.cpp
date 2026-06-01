@@ -60,3 +60,11 @@ void internal_forces::tendons::Tendon::updateKinematics(
     const rigidbody::GeneralizedVelocity& Qdot) {
   m_geometry->updateKinematics(updatedModel, Q, Qdot);
 }
+
+utils::Scalar& internal_forces::tendons::Tendon::length() const {
+  return m_geometry->length();
+}
+
+utils::Vector& internal_forces::tendons::Tendon::sectionLengths() const {
+  return m_geometry->sectionLengths();
+}

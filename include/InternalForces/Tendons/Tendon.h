@@ -51,6 +51,10 @@ public:
     const rigidbody::GeneralizedCoordinates& Q,
     const rigidbody::GeneralizedVelocity& Qdot);
 
+  utils::Scalar& length() const;
+
+  utils::Vector& sectionLengths() const;
+
 protected:
   std::shared_ptr<utils::String> m_name;
   std::shared_ptr<internal_forces::tendons::TendonGeometry> m_geometry;
