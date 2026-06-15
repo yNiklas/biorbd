@@ -52,6 +52,10 @@ public:
 
   size_t nbTotalTendonSections() const;
 
+  void setNonTendonTauIndices(const std::vector<utils::String>& nonTauNames);
+
+  std::vector<size_t> nonTendonTauIndices() const;
+
   ///
   /// \brief Compute the joint torques from tendon actuations
   /// \param tendonForces The pull forces vector of all the tendons. Shape: (nbTendons)
@@ -85,6 +89,7 @@ protected:
   utils::Vector expandTendonPullForcesToSections(const utils::Vector& tendonForces) const;
 
   std::shared_ptr<std::vector<std::shared_ptr<Tendon>>> m_tendons;
+  std::shared_ptr<std::vector<size_t>> m_nonTendonTauIndices;
 };
 }
 }

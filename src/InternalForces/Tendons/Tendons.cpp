@@ -13,11 +13,13 @@ using namespace BIORBD_NAMESPACE;
 internal_forces::tendons::Tendons::Tendons()
     : m_tendons(
           std::make_shared<std::vector<std::shared_ptr<
-              internal_forces::tendons::Tendon>>>()) {}
+              internal_forces::tendons::Tendon>>>()),
+    m_nonTendonTauIndices(std::make_shared<std::vector<size_t>>()) {}
 
 internal_forces::tendons::Tendons::Tendons(
     const internal_forces::tendons::Tendons& other)
-    : m_tendons(other.m_tendons) {}
+    : m_tendons(other.m_tendons),
+    m_nonTendonTauIndices(other.m_nonTendonTauIndices) {}
 
 internal_forces::tendons::Tendons::~Tendons() {}
 
@@ -34,6 +36,10 @@ void internal_forces::tendons::Tendons::DeepCopy(
   for (size_t i = 0; i < other.m_tendons->size(); ++i) {
     (*m_tendons)[i] = std::make_shared<internal_forces::tendons::Tendon>(
         *(*other.m_tendons)[i]);
+  }
+  m_nonTendonTauIndices->resize(other.m_nonTendonTauIndices->size());
+  for (size_t i = 0; i < other.m_nonTendonTauIndices->size(); ++i) {
+    (*m_nonTendonTauIndices)[i] = (*other.m_nonTendonTauIndices)[i];
   }
 }
 
@@ -76,6 +82,27 @@ size_t internal_forces::tendons::Tendons::nbTotalTendonSections() const {
     totalSections += 1 + tendon->nbRoutingPoints();
   }
   return totalSections;
+}
+
+void internal_forces::tendons::Tendons::setNonTendonTauIndices(
+    const std::vector<utils::String>& nonTauNames) {
+  const auto model = dynamic_cast<rigidbody::Joints&>(*this);
+  m_nonTendonTauIndices = std::make_shared<std::vector<size_t>>(0);
+  for (const auto& non_tau_name : nonTauNames) {
+    bool found = false;
+    for (size_t i=0; i < model.nbDof(); ++i) {
+      if (model.nameDof()[i] == non_tau_name) {
+        m_nonTendonTauIndices->push_back(i);
+        found = true;
+        break;
+      }
+    }
+    utils::Error::check(found, "Non-tendon tau name not found in model dof names");
+  }
+}
+
+std::vector<size_t> internal_forces::tendons::Tendons::nonTendonTauIndices() const {
+  return *m_nonTendonTauIndices;
 }
 
 rigidbody::GeneralizedTorque internal_forces::tendons::Tendons::jointTorquesFromTendons(
