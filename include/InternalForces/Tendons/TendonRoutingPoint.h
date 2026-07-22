@@ -24,7 +24,7 @@ public:
   /// @param z The z coordinate of the routing point's position
   /// @param name The name of the routing point
   /// @param parentSegmentName The name of the segment where the point is located
-  /// @param frictionLoss The friction loss coefficient (between 0 and 1) at the routing point (default is 1.0, meaning no loss)
+  /// @param frictionLoss The friction loss coefficient (between 0 and 1) at the routing point (default is 0.0, meaning no loss)
   ///
   TendonRoutingPoint(
       const utils::Scalar& x,

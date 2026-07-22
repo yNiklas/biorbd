@@ -145,6 +145,15 @@ utils::Matrix internal_forces::tendons::Tendons::tendonLengthsJacobian() {
   }
   return tp;
 }
+utils::Matrix internal_forces::tendons::Tendons::tendonLengthsJacobian(
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot) {
+  rigidbody::Joints updatedModel = dynamic_cast<rigidbody::Joints&>(*this).UpdateKinematicsCustom(&Q);
+  for (auto tendon : *m_tendons) {
+    tendon->updateKinematics(updatedModel, Q, Qdot);
+  }
+  return tendonLengthsJacobian();
+}
 
 utils::Matrix internal_forces::tendons::Tendons::tendonSectionLengthsJacobian() {
   const auto& model = dynamic_cast<rigidbody::Joints&>(*this);
@@ -159,6 +168,15 @@ utils::Matrix internal_forces::tendons::Tendons::tendonSectionLengthsJacobian() 
     rowIdx += tendonSectionJaco.rows();
   }
   return tp;
+}
+utils::Matrix internal_forces::tendons::Tendons::tendonSectionLengthsJacobian(
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot) {
+  rigidbody::Joints updatedModel = dynamic_cast<rigidbody::Joints&>(*this).UpdateKinematicsCustom(&Q);
+  for (auto tendon : *m_tendons) {
+    tendon->updateKinematics(updatedModel, Q, Qdot);
+  }
+  return tendonSectionLengthsJacobian();
 }
 
 utils::Vector internal_forces::tendons::Tendons::expandTendonPullForcesToSections(

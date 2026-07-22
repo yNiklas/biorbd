@@ -79,11 +79,26 @@ public:
   utils::Matrix tendonLengthsJacobian();
 
   ///
+  /// Calculates the tendon lengths jacobian for a given configuration.
+  /// WARN: Modifies the internal geometries!
+  /// @param Q The generalized coordinates
+  /// @param Qdot The generalized velocities
+  /// @return The jacobian (dL/dq) of the tendon lengths for the given configuration
+  ///
+  utils::Matrix tendonLengthsJacobian(
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot);
+
+  ///
   /// \brief Constructs the jacobian matrix (dLs/dq) of all tendons sections of all tendons.
   ///        The resulting matrix has the shape (nbTendons * n_sections_per_tendon x nb_q) = (nbTotalTendonSections).
   /// \return The jacobian (dLs/dq) of the tendon sections lengths
   ///
   utils::Matrix tendonSectionLengthsJacobian();
+
+  utils::Matrix tendonSectionLengthsJacobian(
+    const rigidbody::GeneralizedCoordinates& Q,
+    const rigidbody::GeneralizedVelocity& Qdot);
 
 protected:
   utils::Vector expandTendonPullForcesToSections(const utils::Vector& tendonForces) const;
