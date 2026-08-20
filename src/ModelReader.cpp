@@ -741,11 +741,11 @@ void Reader::readModelFile(const utils::Path &path, Model *model) {
             file.read(stiffness, variable);
           } else if (!property_tag.tolower().compare("damping")) {
             file.read(damping, variable);
-          } else if (!property_tag.tolower().compare("muStatic")) {
+          } else if (!property_tag.tolower().compare("mustatic")) {
             file.read(muStatic, variable);
-          } else if (!property_tag.tolower().compare("muDynamic")) {
+          } else if (!property_tag.tolower().compare("mudynamic")) {
             file.read(muDynamic, variable);
-          } else if (!property_tag.tolower().compare("muViscous")) {
+          } else if (!property_tag.tolower().compare("muviscous")) {
             file.read(muViscous, variable);
           }
         }
